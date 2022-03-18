@@ -10,12 +10,7 @@ cmake_minimum_required(VERSION 3.10)
 # put executable name in variable, as we
 # need it in multiple places
 set(EXE_NAME "Weaning_duration")
-
-# unit tests of the individual class
-set(EXE_NAME_IND_TEST "individual_tests")
-
-# unit tests of the simulation class
-set(EXE_NAME_SIM_TEST "simulation_tests")
+set(TESTS_EXE "Weaning_duration_tests")
 
 # make a library of the individual class
 set(INDIVIDUAL_LIB "individual_lib")
@@ -33,12 +28,6 @@ project(Weaning_duration)
 
 # the executable (i.e., the actual programme)
 add_executable("${EXE_NAME}" weaning_duration.cpp)
-
-# add executable of the unit tests for the individual class
-add_executable("${EXE_NAME_IND_TEST}" individual_tests.cpp)
-
-# add executable of the unit tests for the simulation class
-add_executable("${EXE_NAME_SIM_TEST}" simulation_tests.cpp)
 
 add_library("${INDIVIDUAL_LIB}" individual.cpp)
 add_library("${SIMULATION_LIB}" simulation.cpp)
@@ -79,32 +68,6 @@ target_link_libraries(
     "${SIMULATION_LIB}"
 )
 
-# link libraries for the individual unit testing
-target_link_libraries(
-    "${EXE_NAME_IND_TEST}"
-    "${INDIVIDUAL_LIB}"
-)
-
-target_link_libraries(
-    "${EXE_NAME_IND_TEST}"
-    gtest_main
-)
-
-# link libraries for the simulation unit testing
-target_link_libraries(
-    "${EXE_NAME_SIM_TEST}"
-    "${SIMULATION_LIB}"
-)
-
-target_link_libraries(
-    "${EXE_NAME_SIM_TEST}"
-    "${INDIVIDUAL_LIB}"
-)
-
-target_link_libraries(
-    "${EXE_NAME_SIM_TEST}"
-    gtest_main
-)
 
 include(GoogleTest)
 gtest_discover_tests("${EXE_NAME_IND_TEST}")
@@ -112,12 +75,39 @@ gtest_discover_tests("${EXE_NAME_IND_TEST}")
 
 # run all tests directly after building
 # see https://stackoverflow.com/questions/32901679/unit-testing-as-part-of-the-build 
-set(UNIT_TEST "${EXE_NAME_IND_TEST}")
-add_test(NAME "${UNIT_TEST}" COMMAND "${UNIT_TEST}")
-add_custom_command(
-    TARGET ${UNIT_TEST}
-    COMMENT "Run tests"
-    POST_BUILD
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures
+#set(UNIT_TEST "${EXE_NAME_IND_TEST}")
+#add_test(NAME "${UNIT_TEST}" COMMAND "${UNIT_TEST}")
+#add_custom_command(
+#    TARGET ${UNIT_TEST}
+#    COMMENT "Run tests"
+#    POST_BUILD
+#    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^${UNIT_TEST}$" --output-on-failures
+#)
+create_test_sourcelist(Tests
+    all_tests.cpp # the c++ file in which all the source code from the other test files will be collected
+    individual_tests.cpp # testing the individual library
+    simulation_tests.cpp # testing the simulation library
+)
+
+# add a testing executable
+add_executable("${TESTS_EXE}" "${Tests}")
+
+# remove the test driver source code
+
+# link libraries for the individual unit testing
+target_link_libraries(
+    "${TESTS_EXE}"
+    "${INDIVIDUAL_LIB}"
+)
+
+# link libraries for the simulation unit testing
+target_link_libraries(
+    "${TESTS_EXE}"
+    "${SIMULATION_LIB}"
+)
+
+target_link_libraries(
+    "${TESTS_EXE}"
+    gtest_main
 )
