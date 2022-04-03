@@ -36,8 +36,10 @@ void Simulation::run()
     } // end for unsigned generation
 }// end run
 
+// produce new offspring
 void Simulation::produce_offspring(unsigned int const n_offspring_required)
 {
+    // TODO we need to think about resources
     // remove existing offspring
     offspring.clear();
 

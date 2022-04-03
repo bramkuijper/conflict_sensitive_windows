@@ -14,7 +14,7 @@ TEST(SimulationTest, OffspringProduced)
     Parameters params;
     Simulation sim(params);
     
-    EXPECT_TRUE(sim.offspring.size() > 0);
+    EXPECT_TRUE(sim.offspring.size() == 0);
     
     sim.produce_offspring(1);
 
