@@ -7,10 +7,10 @@
 // default individual
 TEST(IndividualTest, DefaultSTraitsZero) {
     Individual ind;
-    EXPECT_EQ(ind.s[0][0],0.0);
-    EXPECT_EQ(ind.s[0][1],0.0);
-    EXPECT_EQ(ind.s[1][0],0.0);
-    EXPECT_EQ(ind.s[1][1],0.0);
+    EXPECT_EQ(ind.s[0][0][0],0.0);
+    EXPECT_EQ(ind.s[0][1][0],0.0);
+    EXPECT_EQ(ind.s[1][0][1],0.0);
+    EXPECT_EQ(ind.s[1][1][1],0.0);
 }
 
 TEST(IndividualTest, DefaultQTraitsZero) {
@@ -24,12 +24,12 @@ TEST(IndividualTest, DefaultQTraitsZero) {
 TEST(IndividualTest, CopyConstructort) {
     double val = 0.5;
     Individual ind1;
-    ind1.s[0][1] = val; 
+    ind1.s[0][1][0] = val; 
 
     Individual ind2(ind1);
 
-    EXPECT_EQ(ind1.s[0][1],ind2.s[0][1]);
-    EXPECT_EQ(ind2.s[0][1],val);
+    EXPECT_EQ(ind1.s[0][1][0],ind2.s[0][1][0]);
+    EXPECT_EQ(ind2.s[0][1][0],val);
 }
 
 TEST(IndividualTest, AddToVector) {

@@ -149,6 +149,28 @@ f_{i}\left(\mathbf{s},\right) & =\sum_{k}\gamma_{ik}\left[\left(1-s_{i,t=1}\righ
 
 \end_layout
 
+\begin_layout Standard
+this suffers from the problem that mothers only pay the cost of one phenotype
+ vs another *after* they send the signal.
+ Two ways out of this: offspring demand resources in each time based on
+ the info they have received so far.
+ Hence,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+E_{i}= & f_{i,t=1}\gamma_{t=1}f_{i,t=2}\gamma_{t=2}\\
+ & +f_{i,t=1}\gamma_{t=1}\left(1-f_{i,t=2}\right)\beta_{t=2}\\
+ & +\left(1-f_{i,t=1}\right)\beta_{t=1}f_{i,t=2}\gamma_{t=2}\\
+ & +\left(1-f_{i,t=1}\right)\beta_{t=1}\left(1-f_{i,t=2}\right)\beta_{t=2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Parental effects as resources
 \end_layout
