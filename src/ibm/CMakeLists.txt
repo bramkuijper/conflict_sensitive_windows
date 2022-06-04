@@ -44,10 +44,10 @@ target_include_directories("${EXE_NAME_SIM_TEST}" PUBLIC
     "${PROJECT_BINARY_DIR}"
     )
 
-# make sure it is c++11. Turns out that on a mac with clang
+# make sure it is c++17. Turns out that on a mac with clang
 # you need to also add flags (eye-roll)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 
 # now adding the google mock testing framework

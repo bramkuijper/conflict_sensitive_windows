@@ -64,6 +64,8 @@ class Individual {
         Individual(
                 Individual const &mom
                 ,Individual const &dad
+                ,bool const envt_t1 // environment during time t1
+                ,bool const envt_t2 // environment during time t2
                 ,std::mt19937 &rng
                 );
 };

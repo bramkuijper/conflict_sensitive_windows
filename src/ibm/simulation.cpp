@@ -3,6 +3,7 @@
 #include <cassert>
 #include "simulation.hpp"
 #include "individual.hpp"
+#include "parameters.hpp"
 
 
 // see also the corresponding header file simulation.hpp
@@ -33,7 +34,6 @@ Simulation::Simulation(Parameters const &params) :
     // to repeat simulations when hunting for bugs etc, but otherwise
     // the seeds should differ between different runs.
     rng_r.seed(params.seed);
-
 }// end Simulation::Simulation
 
 // running the actual simulation over 
@@ -61,44 +61,87 @@ void Simulation::run()
     } // end for unsigned generation
 }// end run
 
-// produce new offspring
+void Simulation::write_data()
+{
+    output_file << generation << ";";
+
+    double meanq[4] = {0.0,0.0,0.0};
+    double varq[4] = {0.0,0.0,0.0};
+
+    double means[2][2] = {{0.0,0.0},{0.0,0.0}};
+    double vars[2][2] = {{0.0,0.0},{0.0,0.0}};
+
+    for (int individual_idx = 0; individual_idx < population.size(); individual_idx)
+    {
+
+    }
+    output_file << std::endl;
+}
+
+
+void Simulation::write_data_headers()
+{
+    output_file << "generation;mean_number_offspring;mean_number_adult_survivors;";
+
+    for (int q_type_idx = 0; q_type_idx < 4; ++q_type_idx)
+    {
+        output_file << "meanq" << q_type_idx << ";"
+    }
+
+    for (int signal_envt_idx = 0; signal_envt_idx < 2; signal_envt_idx++)
+    {
+        for (int signal_time_idx = 0; signal_time_idx < 2; signal_time_idx++)
+        {
+            output_file << "means_e" << signal_envt_idx << "t" << signal_time_idx << ";";
+        }
+    }
+
+    output_file << std::endl;
+}
+
+
+// produce a new offspring
 void Simulation::produce_offspring(unsigned int const n_offspring_required)
 {
     // remove existing newborn offspring
     offspring.clear();
 
-    // parent sampler sampling parental indices
+    // father sampler sampling parental indices
     // between 0 and nparents - 1
-    std::uniform_int_distribution <unsigned int> parent_sampler(0, 
+    //
+    // note we assume hermaphroditism here, as that is easier than 
+    // taking into account separate sexes. See Kuijper & Johnstone 2018
+    // for more information
+    std::uniform_int_distribution <unsigned int> father_sampler(0, 
             population.size() - 1);
 
-    unsigned int father, mother;
+    // auxiliary variable to store currently
+    // sampled father and mother
+    unsigned int father;
 
+    // aux variable that stores the result
+    // of the amount of resources needed for each offspring
     double resources_needed;
 
-    // make new offspring
-    for (unsigned int offspring_idx = 0; 
-            offspring_idx < n_offspring_required;
-            ++offspring_idx)
+    // go through all parents 
+    // and have them produce offspring
+    // based on their resources
+    for (int parent_idx = 0; parent_idx < population.size(); ++parent_idx)
     {
-        // have a number of attempts to sample offspring
-        for (int attempt_idx = 0; 
-                attempt_idx = params.max_offspring_attempts; 
-                ++attempt_idx)
+        while (population[mother].resources > 0.0)
         {
-            mother = parent_sampler(rng_r);
             father = parent_sampler(rng_r);
 
-            if (population[mother].resources <= 0.0)
-            {
-                continue;
-            }
-
+            // to assess how much resources an offspring needs
+            // we first need to produce it
+            //
+            // hence, produce an offspring
             Individual kid(
                     population[mother], 
                     population[father],
                     rng_r);
 
+            // calculate amount of resources that we need
             resources_needed = calculate_offspring_cost(
                     population[mother]
                     ,kid
@@ -143,23 +186,5 @@ void Simulation::change_envt()
 {
 
 } // end change_envt()
-
-// determine offspring phenotype to be either z1 (false)
-// or z2 (true)
-bool Simulation::determine_offspring_phenotype(Individual const &mom
-                ,Individual const &kid
-                ,bool envt)
-{
-    double maternal_signal_prob_t1 = mom.s[envt][0][0] + mom.s[envt][0][1];
-
-    double maternal_signal_prob_t2 = mom.s[envt][1][0] + mom.s[envt][1][1];
-
-    bool signal_t1 = uniform(rng) < maternal_signal_prob_t1;
-    bool signal_t2 = uniform(rng) < maternal_signal_prob_t2;
-
-    int options[2][2] = {{0,1},{2,3}};
-
-    double prob_z1 = q[options[signal_t1][signal_t2]]
-}
 
 
