@@ -17,6 +17,7 @@ struct Parameters
     std::array <double, 4> init_q = {{0.5,0.5,0.5,0.5}};
 
     // initial value for the maternal signaling loci
+    // first index is envt second index is time
     std::array < std::array <double, 2>, 2> init_s = {{
         {{0.5,0.5}}
         ,{{0.5,0.5}}
@@ -62,12 +63,18 @@ class Simulation
         std::vector<Individual> offspring;
         bool environment = 0;
         Simulation(Parameters const &params);
+        
         void run();
+        
         void mortality();
+        
         void change_envt();
+
+        // calculate the cost to a mother of producing an offspring
         double calculate_offspring_cost(Individual const &mom
                 ,Individual const &kid
                 ,bool envt);
+
         void produce_offspring(unsigned int const n_offspring_required);
 
 };

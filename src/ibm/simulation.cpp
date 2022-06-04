@@ -144,10 +144,22 @@ void Simulation::change_envt()
 
 } // end change_envt()
 
-double Simulation::calculate_offspring_cost(Individual const &mom
+// determine offspring phenotype to be either z1 (false)
+// or z2 (true)
+bool Simulation::determine_offspring_phenotype(Individual const &mom
                 ,Individual const &kid
                 ,bool envt)
 {
+    double maternal_signal_prob_t1 = mom.s[envt][0][0] + mom.s[envt][0][1];
+
+    double maternal_signal_prob_t2 = mom.s[envt][1][0] + mom.s[envt][1][1];
+
+    bool signal_t1 = uniform(rng) < maternal_signal_prob_t1;
+    bool signal_t2 = uniform(rng) < maternal_signal_prob_t2;
+
+    int options[2][2] = {{0,1},{2,3}};
+
+    double prob_z1 = q[options[signal_t1][signal_t2]]
 }
 
 

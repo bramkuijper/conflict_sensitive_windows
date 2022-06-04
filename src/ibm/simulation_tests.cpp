@@ -55,6 +55,8 @@ TEST(SimulationTest, EnvtSame)
 
 TEST(SimulationTest, CostCorrect)
 {
+    // Parameter struct defined 
+    // in simulation.hpp
     Parameters params;
 
     Individual mom;
@@ -65,6 +67,7 @@ TEST(SimulationTest, CostCorrect)
     // envt 1
     bool envt = true;
 
+    // calculate the costs
     double costs = sim.calculate_offspring_cost(mom, kid, envt);
 
     // costs are equal to

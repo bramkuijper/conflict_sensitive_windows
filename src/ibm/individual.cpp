@@ -19,9 +19,9 @@ Individual::Individual(
         {{qarg[0],qarg[0]}}, // initialize the two alleles of q0
         {{qarg[1],qarg[1]}}, // initialize the two alleles of q1
         {{qarg[2],qarg[2]}},  // initialize the two allels of q2
-        {{qarg[3],qarg[3]}}
-    }}// initialze the two alleles of q3
-    ,s{{
+        {{qarg[3],qarg[3]}}// initialze the two alleles of q3
+    }}
+    ,s{{ // initialize s with first dimension envt, second dimension time, third dimension which of the two alleles (diploid)
         {{
              {{sarg[0][0],sarg[0][0]}},
              {{sarg[0][1],sarg[0][1]}}
