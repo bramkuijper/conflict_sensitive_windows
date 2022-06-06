@@ -18,7 +18,7 @@ struct Parameters
         ,{{0.5,0.5}}
     }};
 
-    double resources = 3.0;
+    double maternal_resources = 3.0;
 
     // maximum number of attempts per offspring
     // to sample parents with enough resources
@@ -30,16 +30,17 @@ struct Parameters
     // number of time steps the simulation is supposed to run
     unsigned long number_timesteps = 50000;
 
-    // rate of environmental change
+    // rate of environmental change 
+    // first element from envt 1 to 2
+    // second element from envt 2 to 1
     std::array <double, 2> envt_change = {0.5,0.5}; 
 
-    // costs of producing z1, z2
-    std::array <double, 2> costs = {1.0,2.0};
+    // costs of producing z1, z2 to the mother
+    std::array <double, 2> offspring_costs = {1.0,2.0};
+
+    std::array <double, 2> survival_when_maladapted = {0.1,0.1};
 
     std::string base_name = "sim_sensitive_window";
-
-    // the random seed
-    int seed = ::time(NULL);
 
     // mutation rates for q,s 
     double mu_q = 0.01;

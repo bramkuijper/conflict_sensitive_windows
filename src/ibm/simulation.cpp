@@ -10,30 +10,24 @@
 
 // initialize a single individual-based simulation
 Simulation::Simulation(Parameters const &params) :
-    params(params) // set the parameters
+    rd{}
+    ,seed{rd()}
+    ,rng_r{seed}
+    ,params(params) // set the parameters
+    ,output_file(params.base_name.c_str()) // start the output files
+    ,uniform(0.0,1.0)
     ,population(  // initialize all individuals in the vector population
             params.population_size // this is the number of individuals
-            ,Individual(params.resources // give each individual resources
+            ,Individual(params.maternal_resources // give each individual resources
                         ,params.init_q // initial values for the q vector
                         ,params.init_s) // initial values for the s vector
             ) 
-    ,output_file(params.base_name.c_str()) // start the output files
-    ,rng_r(rd()) // start the random number generator
-    ,uniform(0.0,0.1)
 {
     // if population size 0, throw an error
     if (params.population_size < 1)
     {
         throw std::range_error("Population size 0");
     }
-
-    // set the seed of the random number generator
-    // the seed is the identifier of the random number sequence
-    // if you give 2 simulations the same seed (and other conditions are
-    // also the same) their outcomes will be identical. This is great
-    // to repeat simulations when hunting for bugs etc, but otherwise
-    // the seeds should differ between different runs.
-    rng_r.seed(params.seed);
 }// end Simulation::Simulation
 
 // running the actual simulation over 
@@ -71,40 +65,117 @@ void Simulation::write_data()
     double means[2][2] = {{0.0,0.0},{0.0,0.0}};
     double vars[2][2] = {{0.0,0.0},{0.0,0.0}};
 
-    for (int individual_idx = 0; individual_idx < population.size(); individual_idx)
+    double q,s;
+
+    for (int individual_idx = 0; 
+            individual_idx < population.size(); ++individual_idx)
     {
+        // output the mean values of q
+        for (int q_type_idx = 0; q_type_idx < 4; ++q_type_idx)
+        {
+            q = population[individual_idx].q[q_type_idx][0]
+                + population[individual_idx].q[q_type_idx][1];
 
-    }
-    output_file << std::endl;
-}
+            meanq[q_type_idx] += q;
 
+            // store sum of squares
+            varq[q_type_idx] += q * q;
+        }
 
-void Simulation::write_data_headers()
-{
-    output_file << "generation;mean_number_offspring;mean_number_adult_survivors;";
+        // headers for the different values of the maternal signal loci s_ij
+        for (int signal_envt_idx = 0; signal_envt_idx < 2; signal_envt_idx++)
+        {
+            for (int signal_time_idx = 0; signal_time_idx < 2; signal_time_idx++)
+            {
+                s = population[individual_idx].s[signal_envt_idx][signal_time_idx][0] 
+                        + population[individual_idx].s[signal_envt_idx][signal_time_idx][1];
 
+                means[signal_envt_idx][signal_time_idx] += s;
+
+                // store sum of squares
+                vars[signal_envt_idx][signal_time_idx] += s * s;
+            }
+        }
+    } // end for (int individual_idx
+
+    output_file << generation << ";"
+        << environment << ";"
+        << mean_number_offspring << ";"
+        << mean_number_survivors << ";"
+        << mean_proportion_z2 << ";";
+    
+    // output the mean values of q
     for (int q_type_idx = 0; q_type_idx < 4; ++q_type_idx)
     {
-        output_file << "meanq" << q_type_idx << ";"
+        // mean value of q
+        meanq[q_type_idx] /= population.size();
+
+        // var = SS[x] / N - E[x]^2
+        varq[q_type_idx] = varq[q_type_idx] / population.size() 
+            - meanq[q_type_idx] * meanq[q_type_idx];
+
+        output_file << meanq[q_type_idx] << ";";
+        output_file << varq[q_type_idx] << ";";
     }
 
     for (int signal_envt_idx = 0; signal_envt_idx < 2; signal_envt_idx++)
     {
         for (int signal_time_idx = 0; signal_time_idx < 2; signal_time_idx++)
         {
-            output_file << "means_e" << signal_envt_idx << "t" << signal_time_idx << ";";
+            means[signal_envt_idx][signal_time_idx] /= population.size();
+
+            // var = SS[x] / N - E[x]^2
+            vars[signal_envt_idx][signal_time_idx] = 
+                vars[signal_envt_idx][signal_time_idx] / population.size() 
+                    - means[signal_envt_idx][signal_time_idx] *
+                        means[signal_envt_idx][signal_time_idx];
+
+            output_file << means[signal_envt_idx][signal_time_idx] << ";";
+            output_file << vars[signal_envt_idx][signal_time_idx] << ";";
         }
     }
 
     output_file << std::endl;
-}
+} // end write_data()
+
+// write the headers of the data file
+void Simulation::write_data_headers()
+{
+    output_file << "generation;envt;mean_number_offspring;mean_number_adult_survivors;mean_proportion_z2;";
+
+    // headers for the different values of the offspring response loci, q_i
+    for (int q_type_idx = 0; q_type_idx < 4; ++q_type_idx)
+    {
+        output_file << "meanq" << q_type_idx << ";"
+                    << "varq" << q_type_idx << ";";
+    }
+
+    // headers for the different values of the maternal signal loci s_ij
+    for (int signal_envt_idx = 0; signal_envt_idx < 2; signal_envt_idx++)
+    {
+        for (int signal_time_idx = 0; signal_time_idx < 2; signal_time_idx++)
+        {
+            output_file << "means_e" << signal_envt_idx 
+                                << "t" << signal_time_idx << ";"
+                        << "vars_e" << signal_envt_idx 
+                                << "t" << signal_time_idx << ";";
+        }
+    }
+
+    // end with newline, after which the data will be written to the file
+    output_file << std::endl;
+} // end write_data_headers()
 
 
 // produce a new offspring
 void Simulation::produce_offspring(unsigned int const n_offspring_required)
 {
-    // remove existing newborn offspring
+    // remove any newborn offspring from the previous generation
     offspring.clear();
+
+    // reset some stats
+    mean_proportion_z2 = 0.0;
+    int total_number_offspring = 0;
 
     // father sampler sampling parental indices
     // between 0 and nparents - 1
@@ -128,7 +199,7 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
     // based on their resources
     for (int parent_idx = 0; parent_idx < population.size(); ++parent_idx)
     {
-        while (population[mother].resources > 0.0)
+        while (population[parent_idx].resources > 0.0)
         {
             father = parent_sampler(rng_r);
 
@@ -137,54 +208,119 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
             //
             // hence, produce an offspring
             Individual kid(
-                    population[mother], 
-                    population[father],
-                    rng_r);
+                    population[mother],  // kid's mom
+                    population[father], // kid's dad
+                    environment, // current envt
+                    environment_future, // future envt
+                    params, // parameters (to determine mutation rates)
+                    rng_r // random number generator
+                    );
 
             // calculate amount of resources that we need
-            resources_needed = calculate_offspring_cost(
-                    population[mother]
-                    ,kid
-                    ,environment);
+            // at the moment we assume these resources are envt independent
+            resources_needed = parms.offspring_costs[kid.phenotype_z2];
 
             // mom has more resources than needed, 
             // just produce the offspring
-            if (population[mother].resources > resources_needed)
+            if (population[mother].maternal_resources > resources_needed)
             {
+                // update stats
+                mean_proportion_z2 += kid.phenotype_z2;
+                ++total_number_offspring;
+
                 // subtract needed resources
                 population[mother].resources -= resources_needed;
                 offspring.push_back(kid);
-
-                break;
             }
-            else 
+            else  // too few resources to produce kid
             {
-                // population[mother].resources 
+                // however with some luck may still produce offspring
+                // with a probability proportional to actual amount of resources 
+                // available, relative to resources required. For example, if 
+                // required resource is 10 units, but mom only has 8 units available
+                // she will produce offspring with probability 0.8
                 double fraction_resources = 
                     population[mother].resources / resources_needed;
 
                 if (uniform(rng_r) < fraction_resources)
                 {
+                    // update stats
+                    mean_proportion_z2 += kid.phenotype_z2;
+                    ++total_number_offspring;
+
                     offspring.push_back(kid);
-                    break;
                 }
 
+                // regardless of her actually producing 
+                // the half-baked offspring
+                // this will be her last attempt as she has now
+                // ran out of resources
                 population[mother].resources = 0.0;
             }
-        }// end for
+        }// end while resources
     }
+
+    // update stats
+    // so far we have total count of z2 offspring
+    // to calculate proportion divide by total # offspring
+    mean_proportion_z2 /= total_number_offspring;
+
+    // calculate mean number of offspring
+    mean_number_offspring = total_number_offspring / population.size();
+
 } // void Simulation::produce_offspring
 
 // parental mortality function
 void Simulation::mortality()
 {
+    // aux variable denoting a survival probability
+    double survival_prob;
 
-}
+    mean_number_survivors = 0;
+
+    // sample from offspring distribution
+    std::uniform_int_distribution<> offspring_sampler(0, offspring.size() - 1);
+
+    // go through all parents 
+    // and have them produce offspring
+    // based on their resources
+    for (int individual_idx = 0; 
+            individual_idx < population.size(); ++individual_idx)
+    {
+        survival_prob = 
+            // adult experiences the experiment after switching
+            population[individual_idx].phenotype_z2 == environment_future ?
+                params.survival_when_maladapted[environment_future]
+                :
+                params.background_mortality;
+   
+        // to survive uniform random number should fall
+        // in the interval 0 - survival_prob
+        // if it does not, as per below, individual does not survive
+        if (uniform(rng_r) > survival_prob)
+        {
+            // replace adult by newborn
+            population[individual_idx] = offspring[offspring_sampler(rng_r)];
+        }
+        else
+        {
+            ++mean_number_survivors;
+        }
+    }
+} // end Simulation::mortality()
 
 // change the global environment
+// we always work two steps ahead
+// as we need to have knowledge both about the current
+// and the future envt when doing the sensitive window thingy
 void Simulation::change_envt()
 {
+    // make the environment
+    environment = environment_future;
 
+    if (uniform(rng_r) < parms.envt_change[environment_future])
+    {
+        environment_future = !environment_future;
+    }
 } // end change_envt()
-
 

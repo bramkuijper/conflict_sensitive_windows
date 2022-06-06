@@ -4,6 +4,7 @@
 // include array and random from C++'s standard template library
 #include <array>
 #include <random>
+#include "parameters.hpp"
 
 
 // the individual class
@@ -11,6 +12,10 @@
 class Individual {
     
     public:
+
+        // whether individual has phenotype z2
+        bool phenotype_z2 = 0;
+
         double resources = 3.0;
 
         // diploid sensitivity locus for the two timesteps
@@ -66,6 +71,7 @@ class Individual {
                 ,Individual const &dad
                 ,bool const envt_t1 // environment during time t1
                 ,bool const envt_t2 // environment during time t2
+                ,Parameters &params
                 ,std::mt19937 &rng
                 );
 };
