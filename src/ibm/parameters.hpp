@@ -18,7 +18,17 @@ struct Parameters
         ,{{0.5,0.5}}
     }};
 
+    // write stats to file every x time steps
+    int output_interval = 10;
+
+    // resources the mother receives annually
     double maternal_resources = 3.0;
+
+    // background mortality so that there is
+    // some population turnover at least
+    // so without maladaptation, 
+    // average lifespan is 1.0/background_mortality time steps
+    double background_mortality = 0.1;
 
     // maximum number of attempts per offspring
     // to sample parents with enough resources

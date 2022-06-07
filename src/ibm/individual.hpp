@@ -71,7 +71,7 @@ class Individual {
                 ,Individual const &dad
                 ,bool const envt_t1 // environment during time t1
                 ,bool const envt_t2 // environment during time t2
-                ,Parameters &params
+                ,Parameters const &params
                 ,std::mt19937 &rng
                 );
 };

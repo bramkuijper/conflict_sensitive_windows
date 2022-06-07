@@ -38,10 +38,9 @@ void Simulation::run()
     // that need to be produced in this time step
     int n_offspring;
 
-
-    for (unsigned long generation = 0; 
-            generation < params.number_timesteps;
-            ++generation)
+    for (time_step = 0; 
+            time_step < params.number_timesteps;
+            ++time_step)
     {
         mortality();
 
@@ -52,13 +51,16 @@ void Simulation::run()
 
         change_envt();
 
-    } // end for unsigned generation
+        if (time_step % params.output_interval == 0)
+        {
+            write_data();
+        }
+
+    } // end for generation
 }// end run
 
 void Simulation::write_data()
 {
-    output_file << generation << ";";
-
     double meanq[4] = {0.0,0.0,0.0};
     double varq[4] = {0.0,0.0,0.0};
 
@@ -98,7 +100,7 @@ void Simulation::write_data()
         }
     } // end for (int individual_idx
 
-    output_file << generation << ";"
+    output_file << time_step << ";"
         << environment << ";"
         << mean_number_offspring << ";"
         << mean_number_survivors << ";"
@@ -166,10 +168,30 @@ void Simulation::write_data_headers()
     output_file << std::endl;
 } // end write_data_headers()
 
+// write parameters to the output file
+void Simulation::write_parameters()
+{
+    output_file << std::endl
+        << std::endl
+        << "seed;" << seed << std::endl
+        << "envt_change_1;" << params.envt_change[0] << std::endl
+        << "envt_change_2;" << params.envt_change[1] << std::endl
+        << "cost_z1;" << params.offspring_costs[0] << std::endl
+        << "cost_z2;" << params.offspring_costs[1] << std::endl
+        << "survival_maladapted_1;" << params.survival_when_maladapted[0] << std::endl
+        << "survival_maladapted_2;" << params.survival_when_maladapted[1] << std::endl;
+}
 
 // produce a new offspring
 void Simulation::produce_offspring(unsigned int const n_offspring_required)
 {
+    // population extinct...
+    if (population.size() < 2)
+    {
+        write_parameters();
+        exit(1);
+    }
+
     // remove any newborn offspring from the previous generation
     offspring.clear();
 
@@ -188,7 +210,7 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
 
     // auxiliary variable to store currently
     // sampled father and mother
-    unsigned int father;
+    unsigned int father_idx;
 
     // aux variable that stores the result
     // of the amount of resources needed for each offspring
@@ -197,19 +219,27 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
     // go through all parents 
     // and have them produce offspring
     // based on their resources
-    for (int parent_idx = 0; parent_idx < population.size(); ++parent_idx)
+    for (int mother_idx = 0; mother_idx < population.size(); ++mother_idx)
     {
-        while (population[parent_idx].resources > 0.0)
+        // give mother her standard resources
+        // this assumes that resources do not carry over between years
+        population[mother_idx].resources = params.maternal_resources;
+
+        while (population[mother_idx].resources > 0.0)
         {
-            father = parent_sampler(rng_r);
+            // sample any other individual that is the father
+            // i.e., as in a hermaphroditic system. This is just easier
+            // than modeling separate sexes and as only the mother delivers
+            // the resources the outcomes are effectively the same
+            father_idx = father_sampler(rng_r);
 
             // to assess how much resources an offspring needs
             // we first need to produce it
             //
             // hence, produce an offspring
             Individual kid(
-                    population[mother],  // kid's mom
-                    population[father], // kid's dad
+                    population[mother_idx],  // kid's mom
+                    population[father_idx], // kid's dad
                     environment, // current envt
                     environment_future, // future envt
                     params, // parameters (to determine mutation rates)
@@ -218,18 +248,18 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
 
             // calculate amount of resources that we need
             // at the moment we assume these resources are envt independent
-            resources_needed = parms.offspring_costs[kid.phenotype_z2];
+            resources_needed = params.offspring_costs[kid.phenotype_z2];
 
             // mom has more resources than needed, 
             // just produce the offspring
-            if (population[mother].maternal_resources > resources_needed)
+            if (population[mother_idx].resources > resources_needed)
             {
                 // update stats
                 mean_proportion_z2 += kid.phenotype_z2;
                 ++total_number_offspring;
 
                 // subtract needed resources
-                population[mother].resources -= resources_needed;
+                population[mother_idx].resources -= resources_needed;
                 offspring.push_back(kid);
             }
             else  // too few resources to produce kid
@@ -240,7 +270,7 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
                 // required resource is 10 units, but mom only has 8 units available
                 // she will produce offspring with probability 0.8
                 double fraction_resources = 
-                    population[mother].resources / resources_needed;
+                    population[mother_idx].resources / resources_needed;
 
                 if (uniform(rng_r) < fraction_resources)
                 {
@@ -255,10 +285,10 @@ void Simulation::produce_offspring(unsigned int const n_offspring_required)
                 // the half-baked offspring
                 // this will be her last attempt as she has now
                 // ran out of resources
-                population[mother].resources = 0.0;
+                population[mother_idx].resources = 0.0;
             }
         }// end while resources
-    }
+    } // end for (int mother_idx = 0
 
     // update stats
     // so far we have total count of z2 offspring
@@ -277,6 +307,11 @@ void Simulation::mortality()
     double survival_prob;
 
     mean_number_survivors = 0;
+
+    if (offspring.size() < 1)
+    {
+        return;
+    }
 
     // sample from offspring distribution
     std::uniform_int_distribution<> offspring_sampler(0, offspring.size() - 1);
@@ -318,7 +353,7 @@ void Simulation::change_envt()
     // make the environment
     environment = environment_future;
 
-    if (uniform(rng_r) < parms.envt_change[environment_future])
+    if (uniform(rng_r) < params.envt_change[environment_future])
     {
         environment_future = !environment_future;
     }

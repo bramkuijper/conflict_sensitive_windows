@@ -33,7 +33,8 @@ class Simulation
 
         std::uniform_real_distribution<double> uniform;
 
-        long unsigned generation = 0;
+        // keep track of time steps the simulation has been running
+        long unsigned time_step = 0;
 
         // stats
         double mean_number_offspring = 0;
@@ -67,6 +68,7 @@ class Simulation
         // write headers to the data file
         void write_data_headers();
         void write_data();
+        void write_parameters();
 };
 
 #endif

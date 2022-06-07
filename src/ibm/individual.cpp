@@ -44,7 +44,7 @@ Individual::Individual(
         ,Individual const &dad // the father
         ,bool const envt_t1 // the environment during time step 1
         ,bool const envt_t2 // the environment during time step 2
-        ,Parameters &params // a parameter object which contains all the mutation rates
+        ,Parameters const &params // a parameter object which contains all the mutation rates
         ,std::mt19937 &rng // as we need to sample parental alleles, we need a random number generator
 )
 {

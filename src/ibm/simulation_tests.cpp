@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "simulation.hpp"
 #include "individual.hpp"
+#include "parameters.hpp"
 
 TEST(SimulationTest, PopSizeInitializationEqualToParams) {
     Parameters params;
@@ -34,7 +35,9 @@ TEST(SimulationTest, EnvtChanged)
     bool envt_orig = sim.environment;
     sim.change_envt();
 
-    EXPECT_FALSE(envt_orig, envt_new);
+    bool envt_new = !sim.environment;
+
+    EXPECT_FALSE(envt_orig == envt_new);
 }
 
 TEST(SimulationTest, EnvtSame)
@@ -49,32 +52,9 @@ TEST(SimulationTest, EnvtSame)
 
     bool envt_orig = sim.environment;
     sim.change_envt();
+    
+    bool envt_new = !sim.environment;
 
-    EXPECT_FALSE(envt_orig, envt_new);
+    EXPECT_FALSE(envt_orig == envt_new);
 } // end EnvtSame
 
-TEST(SimulationTest, CostCorrect)
-{
-    // Parameter struct defined 
-    // in simulation.hpp
-    Parameters params;
-
-    Individual mom;
-    Individual kid;
-
-    Simulation sim(params);
-
-    // envt 1
-    bool envt = true;
-
-    // calculate the costs
-    double costs = sim.calculate_offspring_cost(mom, kid, envt);
-
-    // costs are equal to
-    // f_i * gamma_i + (1.0 - f_i) * beta_i
-    // obvz this is going to change once we have a more realistic
-    // model of sensitive windows in which resources are gradually
-    // passed around from parent to offspring
-
-    
-} // end CostCorrect

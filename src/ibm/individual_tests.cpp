@@ -52,8 +52,21 @@ TEST(IndividualTest, ParentCtorTest) {
     unsigned seed = rd();
     std::mt19937 rng_r{seed};
 
-    Individual kid1(mom,dad,rng_r);
-    Individual kid2(mom,mom,rng_r);
+    Parameters params;
+
+    Individual kid1(mom
+            ,dad
+            ,0
+            ,0
+            ,params
+            ,rng_r);
+
+    Individual kid2(mom
+            ,dad
+            ,0
+            ,0
+            ,params
+            ,rng_r);
 
     EXPECT_TRUE(kid1.q[0][0] + kid1.q[0][1] > 0.0);
     EXPECT_FALSE(kid2.q[0][0] + kid2.q[0][1] > 0.0);

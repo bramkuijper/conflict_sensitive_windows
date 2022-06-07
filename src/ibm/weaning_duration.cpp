@@ -1,3 +1,4 @@
+#include "simulation.hpp"
 #include "individual.hpp"
 #include "parameters.hpp"
 
