@@ -38,6 +38,8 @@ void Simulation::run()
     // that need to be produced in this time step
     int n_offspring;
 
+    write_data_headers();
+
     for (time_step = 0; 
             time_step < params.number_timesteps;
             ++time_step)
