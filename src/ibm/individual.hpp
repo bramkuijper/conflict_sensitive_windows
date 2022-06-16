@@ -45,11 +45,13 @@ class Individual {
         // notice extra braces around each extra level
         // https://stackoverflow.com/questions/11734861/when-can-outer-braces-be-omitted-in-an-initializer-list 
             
-        // response locus in offspring
-        // s[0] * s[1] -- handled by q[3]
-        // (1-s[0]) * s[1] -- handled by q[2]
-        // s[0] * (1-s[1]) -- handled by q[1]
-        // (1-s[0]) * (1-s[1]) -- handled by q[0]
+        // response locus in offspring: the probability of producing
+        // phenotype z1 (as opposed to z2) when receiving different combinations
+        // of the maternal signal:
+        // s[0] * s[1] -- handled by q[3] (receiving a signal at both time steps)
+        // (1-s[0]) * s[1] -- handled by q[2] (receiving a signal only at t=2)
+        // s[0] * (1-s[1]) -- handled by q[1] (receiving a signal only at t=1)
+        // (1-s[0]) * (1-s[1]) -- handled by q[0] (never receiving a signal)
         std::array <std::array <double, 2>, 4> q = 
         {{
              {{0,0}},
