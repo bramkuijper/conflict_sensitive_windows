@@ -91,8 +91,8 @@ void Simulation::write_data()
         {
             for (int signal_time_idx = 0; signal_time_idx < 2; signal_time_idx++)
             {
-                s = population[individual_idx].s[signal_envt_idx][signal_time_idx][0] 
-                        + population[individual_idx].s[signal_envt_idx][signal_time_idx][1];
+                s = 0.5 * (population[individual_idx].s[signal_envt_idx][signal_time_idx][0] 
+                        + population[individual_idx].s[signal_envt_idx][signal_time_idx][1]);
 
                 means[signal_envt_idx][signal_time_idx] += s;
 
