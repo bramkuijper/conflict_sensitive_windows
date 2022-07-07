@@ -43,7 +43,7 @@ struct Parameters
     // rate of environmental change 
     // first element from envt 1 to 2
     // second element from envt 2 to 1
-    std::array <double, 2> envt_change = {0.5,0.5}; 
+    std::array <double, 2> envt_change = {0.1,0.1}; 
 
     // costs of producing z1, z2 to the mother
     std::array <double, 2> offspring_costs = {1.0,2.0};

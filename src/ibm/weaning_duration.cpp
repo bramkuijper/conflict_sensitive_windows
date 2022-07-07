@@ -8,6 +8,8 @@ int main(int argc, char **argv)
     Parameters params;
 
     params.base_name = argv[1];
+    params.envt_change[0] = std::stod(argv[2]);
+    params.envt_change[1] = std::stod(argv[3]);
 
     // initialize the simulation
     Simulation sim(params);
