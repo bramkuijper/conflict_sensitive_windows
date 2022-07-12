@@ -59,6 +59,8 @@ void Simulation::run()
         }
 
     } // end for generation
+
+    write_parameters();
 }// end run
 
 void Simulation::write_data()
